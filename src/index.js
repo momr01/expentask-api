@@ -44,7 +44,6 @@ app.use("/", express.static(path.join(__dirname, "/public")));
 
 // routes
 app.use("/", require("./routes/root"));
-//app.use("/api/auth", require("./routes/auth"));
 app.use(authRouter);
 app.use(overallRouter);
 app.use("/api/payments", require("./routes/api/payment"));
@@ -69,25 +68,19 @@ app.all("*", (req, res) => {
 
 app.use(errorHandler);
 
-// mongoose.connection.once("open", () => {
-//   console.log("Connected to MongoDB");
-//   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-// });
+mongoose.connection.once("open", () => {
+  console.log("Connected to MongoDB");
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+});
 
+//testing
+/*
 const server = app.listen(PORT, () =>
   console.log(`Server running on port ${PORT}`)
 );
+*/
 
-// const server500 = async () => {
-//   try {
-//     // await mongoose.connect(process.env.DATABASE_URI, {
-//     await mongoose.connect('', {
-//       useUnifiedTopology: true,
-//       useNewUrlParser: true,
-//     });
-//   } catch (err) {
-//     console.error(err);
-//   }
-// };
 
-module.exports = { app, server };
+module.exports = { app
+  //, server 
+};

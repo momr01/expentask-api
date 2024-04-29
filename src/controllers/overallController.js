@@ -71,6 +71,7 @@ const updateDB = async (req, res) => {
     }
     */
 
+    /*
     let categories = await Category.find({});
 
     for (let category of categories) {
@@ -79,15 +80,18 @@ const updateDB = async (req, res) => {
       //category.user = "6542b6a9cd1b77e631389711";
       category.save();
     }
+    */
 
     /*
     let codes = await TaskCode.find({});
 
     for (let code of codes) {
-    //  console.log(code);
-        code.user = "6542b6a9cd1b77e631389711";
-        code.save();
-    }*/
+      //  console.log(code);
+      //code.user = "6542b6a9cd1b77e631389711";
+      code.user = ID_USER;
+      code.save();
+    }
+    */
 
     res.json({ message: "OK" });
   } catch (error) {
