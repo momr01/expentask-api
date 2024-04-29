@@ -17,9 +17,20 @@ const namePaymentSchema = new Schema(
       type: Boolean,
       default: true,
     },
+    defaultTasks: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "TaskCode",
+        required: true,
+      },
+    ],
     dataEntry: {
       type: String,
       default: new Date(),
+    },
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
     },
   },
   {
@@ -38,4 +49,6 @@ const namePaymentSchema = new Schema(
   }
 );
 
-module.exports = mongoose.model("Name", namePaymentSchema);
+//module.exports = mongoose.model("Name", namePaymentSchema);
+const Name = mongoose.model("Name", namePaymentSchema);
+module.exports = { Name, namePaymentSchema };

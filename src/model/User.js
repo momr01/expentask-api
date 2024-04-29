@@ -3,22 +3,40 @@ const Schema = mongoose.Schema;
 
 const userSchema = new Schema(
   {
-    username: {
+    email: {
       type: String,
+      required: true,
+      trim: true,
+      validate: {
+        validator: (value) => {
+          const re =
+            /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+          return value.match(re);
+        },
+        message: "Please enter a valid email address", //only if match is not true
+      },
     },
     password: {
       type: String,
+      required: true,
+      validate: {
+        validator: (value) => {
+          return value.length > 6;
+        },
+        message: "Please enter a valid password with more than 6 characters",
+      },
     },
-    email: {
+    name: {
       type: String,
+      required: true,
+      validate: {
+        validator: (value) => {
+          let textToArray = value.split(" ");
+          return textToArray.length >= 2;
+        },
+        message: "Please enter your name and surname",
+      },
     },
-    firstNames: {
-      type: String,
-    },
-    lastNames: {
-      type: String,
-    },
-
     isActive: {
       type: Boolean,
       default: true,
@@ -27,12 +45,16 @@ const userSchema = new Schema(
       type: String,
       default: new Date(),
     },
-    payments: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Payment",
-      },
-    ],
+    type: {
+      type: String,
+      default: "user",
+    },
+    // payments: [
+    //   {
+    //     type: Schema.Types.ObjectId,
+    //     ref: "Payment",
+    //   },
+    // ],
   },
   {
     toJSON: {
@@ -45,4 +67,5 @@ const userSchema = new Schema(
   }
 );
 
-module.exports = mongoose.model("User", userSchema);
+const User = mongoose.model("User", userSchema);
+module.exports = { User, userSchema };

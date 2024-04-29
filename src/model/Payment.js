@@ -1,49 +1,6 @@
 const mongoose = require("mongoose");
+const { taskSchema } = require("./Task");
 const Schema = mongoose.Schema;
-
-const taskSchema = new Schema(
-  {
-    code: {
-      type: Number,
-      required: true,
-    },
-    name: {
-      type: String,
-      required: true,
-    },
-    deadline: {
-      type: Date,
-      default: new Date(),
-    },
-    isActive: {
-      type: Boolean,
-      default: true,
-    },
-    isCompleted: {
-      type: Boolean,
-      default: false,
-    },
-    dateCompleted: {
-      type: Date,
-      default: null,
-    },
-    place: {
-      type: String,
-      default: "",
-    },
-  },
-  {
-    toObject: {
-      transform: (doc, ret) => {},
-    },
-    toJSON: {
-      transform: (doc, ret) => {
-        delete ret._id;
-        //delete ret.isActive;
-      },
-    },
-  }
-);
 
 const paymentSchema = new Schema(
   {
@@ -112,6 +69,21 @@ const paymentSchema = new Schema(
       type: String,
       default: new Date(),
     },
+    dateCompleted: {
+      type: Date,
+      default: null,
+    },
+    period: {
+      type: String,
+      required: true,
+      validate: {
+        validator: (value) => {
+          
+          return value.length == 7;
+        },
+        message: "The period format is 'mm-yyyy'. Please try again!",
+      },
+    },
     user: {
       type: Schema.Types.ObjectId,
       ref: "User",
@@ -134,8 +106,8 @@ const paymentSchema = new Schema(
   }
 );
 
-function getAmount(value){
-  if(typeof value !== 'undefined'){
+function getAmount(value) {
+  if (typeof value !== "undefined") {
     return parseFloat(value.toString());
   }
 

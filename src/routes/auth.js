@@ -1,7 +1,16 @@
 const express = require("express");
-const router = express.Router();
+const authRouter = express.Router();
 const authController = require("../controllers/authController");
+const auth = require("../middleware/auth");
 
-router.post("/", authController.handleLogin);
+authRouter.post("/api/signup", authController.signUp);
 
-module.exports = router;
+authRouter.post("/api/signin", authController.signIn);
+
+authRouter.post("/tokenIsValid", authController.tokenIsValid);
+
+authRouter.get("/api/get-user-data", auth, authController.getUserData);
+
+
+
+module.exports = authRouter;

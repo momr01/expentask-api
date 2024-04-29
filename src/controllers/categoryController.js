@@ -1,36 +1,52 @@
-const Category = require("../model/Category");
+const {Category} = require("../model/Category");
 
-//add a new category
+/**
+ * Create a new category
+ * @param {*} req
+ * @param {*} res
+ * @returns
+ */
 const addCategory = async (req, res) => {
-  if (!req?.body?.name) {
-    return res.status(400).json({ message: "Please verify the required data" });
-  }
-
-  const categoryExists = await Category.findOne({
-    name: req.body.name,
-  }).exec();
-
-  if (categoryExists) {
-    return res.status(409).json({ message: "The category already exists." });
-  }
-
   try {
-    const result = await Category.create({
-      name: req.body.name,
+    //1. getting data from body
+    const { name } = req.body;
+
+    if(!name){
+      return res.status(400).json({ message: "The name is required." });
+    }
+
+    //2. checking if the category already exists
+    const categoryExists = await Category.findOne({
+      name: name,
+      user: req.user,
     });
-    res.status(201).json(result);
+    if (categoryExists) {
+      return res.status(409).json({ message: "The category already exists." });
+    }
+
+    //3. creating new category
+    let newCategory = new Category({
+      name: name,
+      user: req.user,
+    });
+    newCategory = newCategory.save();
+
+    res.status(201).json(newCategory);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-//get all categories
+/**
+ * Get all the categories
+ * @param {*} req 
+ * @param {*} res 
+ */
 const getAllCategories = async (req, res) => {
   try {
-    const categories = await Category.find();
-    if (categories.length < 1)
-      return res.status(204).json({ message: "No categories were found" });
-    res.json(categories);
+    //1. getting data from db
+    const categories = await Category.find({ user: req.user });
+    res.status(200).json(categories);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

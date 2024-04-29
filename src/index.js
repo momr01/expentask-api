@@ -10,11 +10,16 @@ const verifyJWT = require("./middleware/verifyJWT");
 const cookieParser = require("cookie-parser");
 const credentials = require("./middleware/credentials");
 const mongoose = require("mongoose");
-const connectDB = require("./config/dbConn");
+const { connectDB, connectDBTesting } = require("./config/dbConn");
+const authRouter = require("./routes/auth");
+const overallRouter = require("./routes/overall");
 const PORT = process.env.PORT || 3500;
 
 // Connect to MongoDB
 connectDB();
+
+// Connect to Testing
+//connectDBTesting();
 
 // custom middleware logger
 //app.use(logger);
@@ -39,10 +44,15 @@ app.use("/", express.static(path.join(__dirname, "/public")));
 
 // routes
 app.use("/", require("./routes/root"));
-app.use("/api/payments", require("./routes/api/payments"));
-app.use("/api/users", require("./routes/api/users"));
-app.use("/api/names", require("./routes/api/names"));
-app.use("/api/categories", require("./routes/api/categories"));
+//app.use("/api/auth", require("./routes/auth"));
+app.use(authRouter);
+app.use(overallRouter);
+app.use("/api/payments", require("./routes/api/payment"));
+app.use("/api/users", require("./routes/api/user"));
+app.use("/api/names", require("./routes/api/name"));
+app.use("/api/categories", require("./routes/api/category"));
+app.use("/api/task-codes", require("./routes/api/taskCode"));
+app.use("/api/tasks", require("./routes/api/task"));
 
 //app.use(verifyJWT);
 
@@ -59,9 +69,25 @@ app.all("*", (req, res) => {
 
 app.use(errorHandler);
 
-mongoose.connection.once("open", () => {
-  console.log("Connected to MongoDB");
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-});
+// mongoose.connection.once("open", () => {
+//   console.log("Connected to MongoDB");
+//   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// });
 
-//module.exports = app.listen(3000);
+const server = app.listen(PORT, () =>
+  console.log(`Server running on port ${PORT}`)
+);
+
+// const server500 = async () => {
+//   try {
+//     // await mongoose.connect(process.env.DATABASE_URI, {
+//     await mongoose.connect('', {
+//       useUnifiedTopology: true,
+//       useNewUrlParser: true,
+//     });
+//   } catch (err) {
+//     console.error(err);
+//   }
+// };
+
+module.exports = { app, server };

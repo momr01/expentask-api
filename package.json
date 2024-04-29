@@ -6,7 +6,15 @@
   "scripts": {
     "start": "node src/index",
     "dev": "nodemon src/index",
-    "test": "jest"
+    "test": "set PORT=0&&jest --verbose --silent",
+    "test:watch": "npm run test -- --watch",
+    "test:coverage": "npm run test -- --coverage",
+    "testauth": "set PORT=0&&jest --verbose --silent ./test/auth/auth.test.js",
+    "testauth:watch": "npm run testauth -- --watch",
+    "testauth:coverage": "npm run testauth -- --coverage",
+    "testname": "set PORT=0&&jest ./test/name/name.test.js",
+    "testname:watch": "npm run testname -- --watch",
+    "testname:coverage": "npm run testname -- --coverage"
   },
   "author": "",
   "license": "ISC",
