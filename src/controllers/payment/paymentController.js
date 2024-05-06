@@ -396,7 +396,7 @@ const getUndonePayments = async (req, res) => {
         },
       },
       {
-        $unset: ["isActive", "dataEntry", "__v"],
+        $unset: ["dataEntry", "__v"],
       },
       {
         $lookup: {
@@ -466,6 +466,9 @@ const getUndonePayments = async (req, res) => {
           amount: {
             $first: "$amount",
           },
+          isActive: {
+            $first: "$isActive",
+          },
           isCompleted: {
             $first: "$isCompleted",
           },
@@ -475,9 +478,9 @@ const getUndonePayments = async (req, res) => {
           period: {
             $first: "$period",
           },
-          dateCompleted: {
-            $first: "$dateCompleted",
-          },
+          // dateCompleted: {
+          //   $first: "$dateCompleted",
+          // },
         },
       },
     ]);
