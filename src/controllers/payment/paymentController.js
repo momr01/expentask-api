@@ -38,7 +38,7 @@ const getPayment = async (req, res) => {
         },
       },
       {
-        $unset: ["dataEntry", "__v"],
+        $unset: ["__v"],
       },
       {
         $lookup: {
@@ -123,6 +123,9 @@ const getPayment = async (req, res) => {
           dateCompleted: {
             $first: "$dateCompleted",
           },
+          dataEntry: {
+            $first: "$dataEntry"
+          }
         },
       },
     ]);
@@ -276,7 +279,7 @@ const getAllPayments = async (req, res) => {
         },
       },
       {
-        $unset: ["dataEntry", "__v"],
+        $unset: ["__v"],
       },
       {
         $lookup: {
@@ -361,6 +364,9 @@ const getAllPayments = async (req, res) => {
           dateCompleted: {
             $first: "$dateCompleted",
           },
+          dataEntry: {
+            $first: "$dataEntry"
+          }
         },
       },
     ]);
@@ -396,7 +402,7 @@ const getUndonePayments = async (req, res) => {
         },
       },
       {
-        $unset: ["dataEntry", "__v"],
+        $unset: ["__v"],
       },
       {
         $lookup: {
@@ -481,6 +487,9 @@ const getUndonePayments = async (req, res) => {
           // dateCompleted: {
           //   $first: "$dateCompleted",
           // },
+          dataEntry: {
+            $first: "$dataEntry"
+          }
         },
       },
     ]);
@@ -747,7 +756,7 @@ const createAlerts = async (req, res) => {
         },
       },
       {
-        $unset: ["isActive", "dataEntry", "__v"],
+        $unset: ["isActive", "__v"],
       },
       {
         $lookup: {
@@ -806,6 +815,9 @@ const createAlerts = async (req, res) => {
           dateCompleted: {
             $first: "$dateCompleted",
           },
+          dataEntry: {
+            $first: "$dataEntry"
+          }
         },
       },
     ]);
