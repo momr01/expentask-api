@@ -52,6 +52,8 @@ app.use("/api/names", require("./routes/api/name"));
 app.use("/api/categories", require("./routes/api/category"));
 app.use("/api/task-codes", require("./routes/api/taskCode"));
 app.use("/api/tasks", require("./routes/api/task"));
+app.use("/api/groups", require("./routes/api/group"));
+app.use("/api/notes", require("./routes/api/note"));
 
 //app.use(verifyJWT);
 

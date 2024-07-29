@@ -55,7 +55,58 @@ const createTaskCode = async (req, res) => {
   }
 };
 
+
+/**
+ * Edit one task code
+ * @param {*} req
+ * @param {*} res
+ * @returns
+ */
+const editTaskCode = async (req, res) => {
+  try {
+    //1. getting data from body and params
+    const { name, abbr, number } = req.body;
+    const { id } = req.params;
+
+    //2. checking if the task code exists
+    let taskCodeExists = await TaskCode.findOne({
+      _id: id,
+      user: req.user,
+      isActive: true,
+    });
+    if (!taskCodeExists) {
+      return res.status(400).json({ message: "The task code does not exist." });
+    }
+
+    //3. checking every param is complete with data
+    if(!name || !abbr || !number){
+      return res.status(400).json({ message: "Please, complete the required data." });
+    }
+
+    //4. checking if the number exists
+    const numberExists = await TaskCode.findOne({
+      number
+    });
+    if (numberExists) {
+      return res.status(400).json({ message: "The number is already in use. Please choose another one." });
+    }
+
+    //5. updating the information
+    taskCodeExists.name = name;
+    taskCodeExists.abbr = abbr;
+    taskCodeExists.number = number;
+
+    //7. saving data
+    await taskCodeExists.save();
+
+    res.status(201).json({ message: "Task code updated successfully." });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getAllTaskCodes,
   createTaskCode,
+  editTaskCode
 };

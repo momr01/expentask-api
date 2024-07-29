@@ -7,4 +7,6 @@ router.route("/getAll").get(auth, taskCodeController.getAllTaskCodes);
 
 router.route("/add").post(auth, taskCodeController.createTaskCode);
 
+router.route("/editTaskCode/:id").put(auth, taskCodeController.editTaskCode);
+
 module.exports = router;
