@@ -157,7 +157,7 @@ const addIndividualPayments = async (req, res) => {
     //3. creating variables to save in db
     let defineDeadline = new Date(year, month, 0);
     let period;
-    if (month >= 1 || month <= 9) {
+    if (month >= 1 && month <= 9) {
       period = `0${month}-${year}`;
     } else {
       period = `${month}-${year}`;
