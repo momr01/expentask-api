@@ -90,7 +90,7 @@ const getPayment = async (req, res) => {
           as: "user",
           pipeline: [
             {
-              $unset: ["password","isActive", "dataEntry", "payments", "__v"],
+              $unset: ["password", "isActive", "dataEntry", "payments", "__v"],
             },
           ],
         },
@@ -124,8 +124,8 @@ const getPayment = async (req, res) => {
             $first: "$dateCompleted",
           },
           dataEntry: {
-            $first: "$dataEntry"
-          }
+            $first: "$dataEntry",
+          },
         },
       },
     ]);
@@ -231,7 +231,7 @@ const addIndividualPayments = async (req, res) => {
             user: req.user,
           });
 
-          if(firstCode){
+          if (firstCode) {
             const taskSchema = {
               code: firstCode._id,
               deadline: defineDeadline,
@@ -244,7 +244,6 @@ const addIndividualPayments = async (req, res) => {
                 "Please add at least one task code before creating a new payment.",
             });
           }
-         
         }
         newPayment.save();
       }
@@ -331,7 +330,7 @@ const getAllPayments = async (req, res) => {
           as: "user",
           pipeline: [
             {
-              $unset: ["password","isActive", "dataEntry", "payments", "__v"],
+              $unset: ["password", "isActive", "dataEntry", "payments", "__v"],
             },
           ],
         },
@@ -365,12 +364,15 @@ const getAllPayments = async (req, res) => {
             $first: "$dateCompleted",
           },
           dataEntry: {
-            $first: "$dataEntry"
-          }
+            $first: "$dataEntry",
+          },
         },
       },
     ]);
 
+    console.log(" hola");
+    console.log(payments);
+    console.log(" fin");
     res.json(payments);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -454,7 +456,7 @@ const getUndonePayments = async (req, res) => {
           as: "user",
           pipeline: [
             {
-              $unset: ["password","isActive", "dataEntry", "payments", "__v"],
+              $unset: ["password", "isActive", "dataEntry", "payments", "__v"],
             },
           ],
         },
@@ -488,8 +490,8 @@ const getUndonePayments = async (req, res) => {
           //   $first: "$dateCompleted",
           // },
           dataEntry: {
-            $first: "$dataEntry"
-          }
+            $first: "$dataEntry",
+          },
         },
       },
     ]);
@@ -633,7 +635,7 @@ const editPayment = async (req, res) => {
 const completeTask = async (req, res) => {
   try {
     //1. getting data from body and params
-    const { taskId, date } = req.body;
+    const { taskId, date, amountPaid } = req.body;
     const { id } = req.params;
 
     //2. find the payment that contains the task and checking the user permission, that the payment is active and is not completed
@@ -665,6 +667,7 @@ const completeTask = async (req, res) => {
         if (!task.isCompleted) {
           //the task is not completed
           task.place = req.body.method ? req.body.method : "";
+          task.amountPaid = amountPaid;
           task.isCompleted = true;
           task.dateCompleted = date;
         } else {
@@ -816,8 +819,8 @@ const createAlerts = async (req, res) => {
             $first: "$dateCompleted",
           },
           dataEntry: {
-            $first: "$dataEntry"
-          }
+            $first: "$dataEntry",
+          },
         },
       },
     ]);
@@ -862,13 +865,16 @@ const numberOfAlerts = async (req, res) => {
       user: new mongoose.Types.ObjectId(req.user),
     });
 
-  
     if (payments.length > 0) {
       for (const payment of payments) {
         for (let i = 0; i < payment.tasks.length; i++) {
           const day = getDaysBetweenDates(payment.tasks[i].deadline);
 
-          if (day >= -5 && !payment.tasks[i].isCompleted && payment.tasks[i].isActive) {
+          if (
+            day >= -5 &&
+            !payment.tasks[i].isCompleted &&
+            payment.tasks[i].isActive
+          ) {
             total++;
           }
         }

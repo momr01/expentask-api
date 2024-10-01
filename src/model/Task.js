@@ -13,7 +13,7 @@ const taskSchema = new Schema(
       default: new Date(),
     },
     name: {
-      type: String
+      type: String,
     },
     isActive: {
       type: Boolean,
@@ -30,6 +30,11 @@ const taskSchema = new Schema(
     place: {
       type: String,
       default: "",
+    },
+    amountPaid: {
+      type: mongoose.Types.Decimal128,
+      default: 0.0,
+      get: getAmount,
     },
     paymentId: {
       type: Schema.Types.ObjectId,
@@ -49,6 +54,14 @@ const taskSchema = new Schema(
     },
   }
 );
+
+function getAmount(value) {
+  if (typeof value !== "undefined") {
+    return parseFloat(value.toString());
+  }
+
+  return value;
+}
 
 const Task = mongoose.model("Task", taskSchema);
 module.exports = { Task, taskSchema };

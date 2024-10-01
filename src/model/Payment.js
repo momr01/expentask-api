@@ -18,6 +18,7 @@ const paymentSchema = new Schema(
       default: 0.0,
       get: getAmount,
     },
+  
     tasks: [taskSchema],
     /* tasks: {
       type: Object,
@@ -78,7 +79,6 @@ const paymentSchema = new Schema(
       required: true,
       validate: {
         validator: (value) => {
-          
           return value.length == 7;
         },
         message: "The period format is 'mm-yyyy'. Please try again!",

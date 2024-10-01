@@ -93,7 +93,10 @@ const updateDB = async (req, res) => {
     }
     */
 
-    res.json({ message: "OK" });
+    let payments = await Payment.find({});
+    res.json(payments);
+
+    // res.json({ message: "OK" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
