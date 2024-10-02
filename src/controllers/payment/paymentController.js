@@ -70,6 +70,13 @@ const getPayment = async (req, res) => {
         $unwind: "$tasks",
       },
       {
+        $addFields: {
+          "tasks.amountPaid": {
+            $toString: "$tasks.amountPaid", // Convierte amountPaid a string
+          },
+        },
+      },
+      {
         $lookup: {
           from: "taskcodes",
           localField: "tasks.code",
@@ -310,6 +317,13 @@ const getAllPayments = async (req, res) => {
         $unwind: "$tasks",
       },
       {
+        $addFields: {
+          "tasks.amountPaid": {
+            $toString: "$tasks.amountPaid", // Convierte amountPaid a string
+          },
+        },
+      },
+      {
         $lookup: {
           from: "taskcodes",
           localField: "tasks.code",
@@ -436,6 +450,13 @@ const getUndonePayments = async (req, res) => {
         $unwind: "$tasks",
       },
       {
+        $addFields: {
+          "tasks.amountPaid": {
+            $toString: "$tasks.amountPaid", // Convierte amountPaid a string
+          },
+        },
+      },
+      {
         $lookup: {
           from: "taskcodes",
           localField: "tasks.code",
@@ -492,6 +513,12 @@ const getUndonePayments = async (req, res) => {
           dataEntry: {
             $first: "$dataEntry",
           },
+        },
+      },
+      {
+        $sort: {
+          "name.0.name": 1, // Orden ascendente por name
+          period: 1, // Orden ascendente por period
         },
       },
     ]);
@@ -667,7 +694,7 @@ const completeTask = async (req, res) => {
         if (!task.isCompleted) {
           //the task is not completed
           task.place = req.body.method ? req.body.method : "";
-          task.amountPaid = amountPaid;
+          task.amountPaid = req.body.method ? amountPaid : 0;
           task.isCompleted = true;
           task.dateCompleted = date;
         } else {

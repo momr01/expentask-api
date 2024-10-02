@@ -10,6 +10,8 @@ const Payment = require("../model/Payment");
 const { Category } = require("../model/Category");
 const { TaskCode } = require("../model/TaskCode");
 
+const { default: mongoose } = require("mongoose");
+
 const updateDB = async (req, res) => {
   try {
     //1. agregar periodo a payment
@@ -93,7 +95,141 @@ const updateDB = async (req, res) => {
     }
     */
 
+    /* let payments = await Payment.aggregate([
+      {
+        $addFields: {
+          amount: {
+            $toString: "$amount",
+          },
+        },
+      },
+      {
+        $unset: ["__v"],
+      },
+      {
+        $lookup: {
+          from: "names",
+          localField: "name",
+          foreignField: "_id",
+          as: "name",
+          pipeline: [
+            {
+              $unset: ["dataEntry", "__v"],
+            },
+            {
+              $lookup: {
+                from: "categories",
+                localField: "category",
+                foreignField: "_id",
+                as: "category",
+                pipeline: [
+                  {
+                    $unset: ["dataEntry", "__v"],
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: "$tasks",
+      },
+      {
+        $addFields: {
+          "tasks.amountPaid": {
+            $toString: "$tasks.amountPaid", // Convierte amountPaid a string
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "taskcodes",
+          localField: "tasks.code",
+          foreignField: "_id",
+          as: "code",
+        },
+      },
+      {
+        $set: {
+          "tasks.code": "$code",
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "user",
+          pipeline: [
+            {
+              $unset: ["password", "isActive", "dataEntry", "payments", "__v"],
+            },
+          ],
+        },
+      },
+      {
+        $group: {
+          _id: "$_id",
+          name: {
+            $first: "$name",
+          },
+          deadline: {
+            $first: "$deadline",
+          },
+          isActive: {
+            $first: "$isActive",
+          },
+          amount: {
+            $first: "$amount",
+          },
+          isCompleted: {
+            $first: "$isCompleted",
+          },
+          user: {
+            $first: "$user",
+          },
+          period: {
+            $first: "$period",
+          },
+          tasks: { $push: "$tasks" },
+          dateCompleted: {
+            $first: "$dateCompleted",
+          },
+          dataEntry: {
+            $first: "$dataEntry",
+          },
+        },
+      },
+    ]);*/
+
+    // let payments = await Payment.find({});
+
+    // for (let payment of payments) {
+    //   for (let task of payment.tasks) {
+
+    //     task.amountPaid = payment.amount;
+    //   }
+    //   payment.save();
+    // }
+
     let payments = await Payment.find({});
+
+    for (let payment of payments) {
+      for (let task of payment.tasks) {
+        if (task.code == "6626c59ddb4828b66d9ac7e6") {
+          // console.log(" SI");
+          task.amountPaid = payment.amount;
+        } else {
+          task.amountPaid = 0;
+        }
+
+        // task.amountPaid = payment.amount;
+      }
+      //console.log(payment);
+       payment.save();
+    }
+
     res.json(payments);
 
     // res.json({ message: "OK" });
