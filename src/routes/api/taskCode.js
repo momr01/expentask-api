@@ -9,4 +9,8 @@ router.route("/add").post(auth, taskCodeController.createTaskCode);
 
 router.route("/editTaskCode/:id").put(auth, taskCodeController.editTaskCode);
 
+router
+  .route("/disableTaskCode/:id")
+  .put(auth, taskCodeController.disableTaskCode);
+
 module.exports = router;

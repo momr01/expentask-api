@@ -112,8 +112,42 @@ const editTaskCode = async (req, res) => {
   }
 };
 
+/**
+ * Disbale one task code
+ * @param {*} req
+ * @param {*} res
+ * @returns
+ */
+const disableTaskCode = async (req, res) => {
+  try {
+    // 1. getting data from params
+    const { id } = req.params;
+
+    //2. checking the user permission and the state of the task code
+    let taskCodeActive = await TaskCode.findOne({
+      _id: id,
+      user: req.user,
+      isActive: true,
+    });
+    if (!taskCodeActive) {
+      return res.status(400).json({ message: "The task code does not exist." });
+    }
+
+    //3. change the state of the payment
+    taskCodeActive.isActive = false;
+
+    //4. saving the data
+    await taskCodeActive.save();
+
+    res.status(204).json({ message: "The task code was disabled correctly." });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   getAllTaskCodes,
   createTaskCode,
   editTaskCode,
+  disableTaskCode,
 };
