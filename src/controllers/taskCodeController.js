@@ -5,9 +5,11 @@ const { TaskCode } = require("../model/TaskCode");
  * @param {*} req
  * @param {*} res
  */
-const getAllTaskCodes = async (req, res) => {
+const getActiveTaskCodes = async (req, res) => {
   try {
-    const codes = await TaskCode.find({ user: req.user, isActive: true });
+    const codes = await TaskCode.find({ user: req.user, isActive: true }).sort({
+      number: 1,
+    });
     res.status(200).json(codes);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -153,7 +155,7 @@ const disableTaskCode = async (req, res) => {
 };
 
 module.exports = {
-  getAllTaskCodes,
+  getActiveTaskCodes,
   createTaskCode,
   editTaskCode,
   disableTaskCode,
