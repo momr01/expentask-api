@@ -48,13 +48,12 @@ const createTaskCode = async (req, res) => {
     });
 
     newTaskCode = await newTaskCode.save();
-    
+
     res.status(201).json(newTaskCode);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
-
 
 /**
  * Edit one task code
@@ -79,16 +78,24 @@ const editTaskCode = async (req, res) => {
     }
 
     //3. checking every param is complete with data
-    if(!name || !abbr || !number){
-      return res.status(400).json({ message: "Please, complete the required data." });
+    if (!name || !abbr || !number) {
+      return res
+        .status(400)
+        .json({ message: "Please, complete the required data." });
     }
 
     //4. checking if the number exists
     const numberExists = await TaskCode.findOne({
-      number
+      number,
     });
-    if (numberExists) {
-      return res.status(400).json({ message: "The number is already in use. Please choose another one." });
+
+    //console.log(numberExists);
+
+    // console.log(numberExists._id.toString() === id);
+    if (numberExists._id.toString() !== id) {
+      return res.status(400).json({
+        message: "The number is already in use. Please choose another one.",
+      });
     }
 
     //5. updating the information
@@ -108,5 +115,5 @@ const editTaskCode = async (req, res) => {
 module.exports = {
   getAllTaskCodes,
   createTaskCode,
-  editTaskCode
+  editTaskCode,
 };
