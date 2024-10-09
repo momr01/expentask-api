@@ -24,7 +24,10 @@ const createTaskCode = async (req, res) => {
     const { name, abbr } = req.body;
 
     let number = 1;
-    const currentCodes = await TaskCode.find({ isActive: true });
+    const currentCodes = await TaskCode.find({
+      isActive: true,
+      user: req.user,
+    });
     if (currentCodes.length > 0) {
       number = currentCodes[currentCodes.length - 1].number + 1;
     }
@@ -87,6 +90,8 @@ const editTaskCode = async (req, res) => {
     //4. checking if the number exists
     const numberExists = await TaskCode.findOne({
       number,
+      user: req.user,
+      isActive: true,
     });
 
     //console.log(numberExists);
