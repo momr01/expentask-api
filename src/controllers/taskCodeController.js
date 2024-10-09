@@ -24,7 +24,7 @@ const createTaskCode = async (req, res) => {
     const { name, abbr } = req.body;
 
     let number = 1;
-    const currentCodes = await TaskCode.find();
+    const currentCodes = await TaskCode.find({ isActive: true });
     if (currentCodes.length > 0) {
       number = currentCodes[currentCodes.length - 1].number + 1;
     }
