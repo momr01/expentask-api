@@ -97,10 +97,12 @@ const editTaskCode = async (req, res) => {
     //console.log(numberExists);
 
     // console.log(numberExists._id.toString() === id);
-    if (numberExists._id.toString() !== id) {
-      return res.status(400).json({
-        message: "The number is already in use. Please choose another one.",
-      });
+    if (numberExists) {
+      if (numberExists._id.toString() !== id) {
+        return res.status(400).json({
+          message: "The number is already in use. Please choose another one.",
+        });
+      }
     }
 
     //5. updating the information
