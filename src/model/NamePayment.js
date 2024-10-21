@@ -41,7 +41,7 @@ const namePaymentSchema = new Schema(
       transform: (doc, ret) => {
         delete ret.dataEntry;
         delete ret.__v;
-        delete ret.isActive;
+        //delete ret.isActive;
         delete ret._id;
         //delete ret.payment;
       },

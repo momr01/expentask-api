@@ -15,6 +15,13 @@ const categorySchema = new Schema(
       type: String,
       default: new Date(),
     },
+    listNames: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Name",
+        // required: true,
+      },
+    ],
     user: {
       type: Schema.Types.ObjectId,
       ref: "User",
