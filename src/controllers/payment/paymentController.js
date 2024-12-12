@@ -133,6 +133,12 @@ const getPayment = async (req, res) => {
           dataEntry: {
             $first: "$dataEntry",
           },
+          hasInstallments: {
+            $first: "$hasInstallments",
+          },
+          installmentsQuantity: {
+            $first: "$installmentsQuantity",
+          },
         },
       },
     ]);
@@ -263,6 +269,160 @@ const addIndividualPayments = async (req, res) => {
 };
 
 /**
+ * Create many payments in one operation with installments
+ * @param {*} req
+ * @param {*} res
+ * @returns
+ */
+const addPaymentsWithInstallments = async (req, res) => {
+  try {
+    //1. getting variables from body
+    const { quantity, names, month, year, periodicity } = req.body;
+
+    if (
+      !quantity ||
+      quantity == 0 ||
+      !names ||
+      names == [] ||
+      !month ||
+      !year
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Please check the required data." });
+    }
+
+    //2. checking if every name is different
+    let namesUnique = [...new Set(names)];
+    if (namesUnique.length != names.length) {
+      return res
+        .status(400)
+        .json({ message: "You can not duplicate the names." });
+    }
+
+    //3. creating variables to save in db
+    let defineDeadline = new Date(year, month, 0);
+    let period;
+    if (month >= 1 && month <= 9) {
+      period = `0${month}-${year}`;
+    } else {
+      period = `${month}-${year}`;
+    }
+
+    // just validations
+    for (const name of names) {
+      //4. checking if every name exists
+      const nameExists = await Name.findOne({
+        _id: name,
+        user: req.user,
+      });
+      if (!nameExists)
+        return res.status(400).json({ message: "The names don't exist." });
+
+      //5. checking there is no payment with same period already created
+      let samePeriodExists = await Payment.findOne({
+        name: name,
+        period: period,
+        user: req.user,
+        //isActive: true
+      });
+      if (samePeriodExists && samePeriodExists.isActive) {
+        return res.status(409).json({
+          message:
+            "You have at least one payment with same name and period already registered.",
+        });
+      }
+    }
+
+    // creation
+    for (const name of names) {
+      //previous information
+      const nameExists = await Name.findOne({
+        _id: name,
+        user: req.user,
+      });
+
+      let samePeriodExists = await Payment.findOne({
+        name: name,
+        period: period,
+        user: req.user,
+        //isActive: true
+      });
+
+      //6. updating payment with same period but isActive = false
+      if (samePeriodExists && !samePeriodExists.isActive) {
+        samePeriodExists.isActive = true;
+        samePeriodExists.save();
+      } else {
+        //7. creating the payments
+        let newPayment = new Payment({
+          name: name,
+          deadline: defineDeadline,
+          user: req.user,
+          period: period,
+          hasInstallments: true,
+          installmentsQuantity: quantity,
+        });
+
+        if (nameExists.defaultTasks.length > 0) {
+          for (const task of nameExists.defaultTasks) {
+            let initMonth = month;
+
+            for (let index = 0; index < quantity; index++) {
+              let eachDeadline = new Date(year, initMonth, 0);
+
+              //console.log(newMonth);
+              //console.log(aver);
+
+              const taskSchema = {
+                code: task,
+                // deadline: defineDeadline,
+                // deadline: instalmentDeadline(year, month + 1),
+                deadline: eachDeadline,
+                paymentId: newPayment._id,
+                instalmentNumber: index + 1,
+              };
+              newPayment.tasks.push(taskSchema);
+
+              //newMonth++;
+              initMonth++;
+            }
+          }
+        } else {
+          const firstCode = await TaskCode.findOne({
+            number: 1,
+            user: req.user,
+          });
+
+          if (firstCode) {
+            for (let index = 0; index < quantity; index++) {
+              const taskSchema = {
+                code: firstCode._id,
+                deadline: defineDeadline,
+                paymentId: newPayment._id,
+                instalmentNumber: index + 1,
+              };
+              newPayment.tasks.push(taskSchema);
+            }
+          } else {
+            return res.status(400).json({
+              message:
+                "Please add at least one task code before creating a new payment.",
+            });
+          }
+        }
+        newPayment.save();
+        //console.log(newPayment);
+      }
+    }
+
+    res.json({ result: "Payments created successfully." });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+/**
  * Get all the payments
  * @param {*} req
  * @param {*} res
@@ -350,6 +510,14 @@ const getAllPayments = async (req, res) => {
         },
       },
       {
+        $addFields: {
+          year: { $toInt: { $arrayElemAt: [{ $split: ["$period", "-"] }, 1] } }, // Extrae el año
+          month: {
+            $toInt: { $arrayElemAt: [{ $split: ["$period", "-"] }, 0] },
+          }, // Extrae el mes
+        },
+      },
+      {
         $group: {
           _id: "$_id",
           name: {
@@ -380,13 +548,27 @@ const getAllPayments = async (req, res) => {
           dataEntry: {
             $first: "$dataEntry",
           },
+          hasInstallments: {
+            $first: "$hasInstallments",
+          },
+          installmentsQuantity: {
+            $first: "$installmentsQuantity",
+          },
+        },
+      },
+      {
+        $sort: {
+          // "name.0.name": 1, // Orden ascendente por name
+          //  period: 1, // Orden ascendente por period
+          year: 1, // Ordena por año (ascendente)
+          //  month: 1, // Ordena por mes (ascendente)
         },
       },
     ]);
 
-    console.log(" hola");
+    //console.log(" hola");
     console.log(payments);
-    console.log(" fin");
+    // console.log(" fin");
     res.json(payments);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -513,6 +695,12 @@ const getUndonePayments = async (req, res) => {
           dataEntry: {
             $first: "$dataEntry",
           },
+          hasInstallments: {
+            $first: "$hasInstallments",
+          },
+          installmentsQuantity: {
+            $first: "$installmentsQuantity",
+          },
         },
       },
       {
@@ -574,7 +762,11 @@ const editPayment = async (req, res) => {
 
     // 6. check if each code id from the body exists
     for (let id of codesArray) {
-      const codeExists = await TaskCode.findOne({ _id: id, user: req.user });
+      const codeExists = await TaskCode.findOne({ _id: id, 
+      //  user: req.user
+      allowedUsers: req.user,
+      
+      });
       if (!codeExists) {
         return res.status(400).json({
           message: "The task code is not correct!",
@@ -607,7 +799,9 @@ const editPayment = async (req, res) => {
     }
 
     // 11. asign the values to db
-    paymentExists.tasks = cleanTasksArray;
+    paymentExists.tasks = paymentExists.hasInstallments
+      ? paymentExists.tasks
+      : cleanTasksArray;
 
     // 12. save into db, new tasks
     for (let index = 0; index < unsavedTasks.length; index++) {
@@ -619,10 +813,12 @@ const editPayment = async (req, res) => {
     }
 
     // 13. updated in db, tasks that already exist
-    for (let index = 0; index < savedTasks.length; index++) {
-      for (var item of paymentExists.tasks) {
-        if (item.code == savedTasks[index].code) {
-          item.deadline = savedTasks[index].deadline;
+    if (!paymentExists.hasInstallments) {
+      for (let index = 0; index < savedTasks.length; index++) {
+        for (var item of paymentExists.tasks) {
+          if (item.code == savedTasks[index].code) {
+            item.deadline = savedTasks[index].deadline;
+          }
         }
       }
     }
@@ -924,4 +1120,5 @@ module.exports = {
   createAlerts,
   addIndividualPayments,
   numberOfAlerts,
+  addPaymentsWithInstallments,
 };

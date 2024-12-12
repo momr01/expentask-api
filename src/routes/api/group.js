@@ -5,6 +5,10 @@ const auth = require("../../middleware/auth");
 
 router.route("/add").post(auth, groupsController.addGroup);
 
-router.route("/getAll").get(auth, groupsController.getAllGroups);
+router.route("/getActive").get(auth, groupsController.getActiveGroups);
+
+router.route("/edit/:id").put(auth, groupsController.editGroup);
+
+router.route("/disable/:id").put(auth, groupsController.disableGroup);
 
 module.exports = router;

@@ -3,7 +3,13 @@ const router = express.Router();
 const taskCodeController = require("../../controllers/taskCodeController");
 const auth = require("../../middleware/auth");
 
-router.route("/getActive").get(auth, taskCodeController.getActiveTaskCodes);
+router
+  .route("/getActiveOwn")
+  .get(auth, taskCodeController.getActiveOwnTaskCodes);
+
+router
+  .route("/getActiveUsable")
+  .get(auth, taskCodeController.getActiveUsableTaskCodes);
 
 router.route("/add").post(auth, taskCodeController.createTaskCode);
 

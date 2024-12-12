@@ -3,7 +3,12 @@ const router = express.Router();
 const paymentsController = require("../../controllers/payment/paymentController");
 const auth = require("../../middleware/auth");
 
-router.route("/add-individual").post(auth, paymentsController.addIndividualPayments);
+router
+  .route("/add-individual")
+  .post(auth, paymentsController.addIndividualPayments);
+router
+  .route("/add-installments")
+  .post(auth, paymentsController.addPaymentsWithInstallments);
 router.route("/get/:id").get(auth, paymentsController.getPayment);
 router.route("/getAll").get(auth, paymentsController.getAllPayments);
 router

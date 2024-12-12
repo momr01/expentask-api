@@ -213,6 +213,8 @@ const updateDB = async (req, res) => {
     //   payment.save();
     // }
 
+    /*
+
     let payments = await Payment.find({});
 
     for (let payment of payments) {
@@ -230,9 +232,91 @@ const updateDB = async (req, res) => {
        payment.save();
     }
 
-    res.json(payments);
+    res.json(payments);*/
+/*
+    // agregar installments a payment y tasks
+    let payments = await Payment.find({});
+    for (let payment of payments) {
+      for (let task of payment.tasks) {
+        task.instalmentNumber = 0;
+      }
+      await payment.save();
+      console.log(payment);
+    }
+    console.log(payments.length)
+    */
 
-    // res.json({ message: "OK" });
+
+
+
+    /*
+    //agregar cantidad de cuotas a pagos
+    let payments = await Payment.find({});
+    for (let payment of payments) {
+      payment.save();
+    }*/
+
+    /*
+    //agregar todos los pagos de cada cuota
+    let payments = await Payment.find({});
+    for (let payment of payments) {
+      if (payment.hasInstallments) {
+        console.log(payment);
+
+        for (let index = 3; index < 19; index++) {
+          const taskSchema1 = {
+            code: "65e3405d73963e0fdcee8a12",
+            deadline: new Date(2025, index - 1, 0),
+            paymentId: payment._id,
+            instalmentNumber: index,
+          };
+          const taskSchema2 = {
+            code: "65e6448073963e0fdcee8a34",
+            deadline: new Date(2025, index - 1, 0),
+            paymentId: payment._id,
+            instalmentNumber: index,
+          };
+
+          payment.tasks.push(taskSchema1);
+          payment.tasks.push(taskSchema2);
+        }
+
+        // const taskSchema1 = {
+        //   code: "65e3405d73963e0fdcee8a12",
+        //   deadline: new Date(2025, 1, 0),
+        //   paymentId: payment._id,
+        //   instalmentNumber: 3,
+        // };
+        // const taskSchema2 = {
+        //   code: "65e6448073963e0fdcee8a34",
+        //   deadline: new Date(2025, 1, 0),
+        //   paymentId: payment._id,
+        //   instalmentNumber: 3,
+        // };
+
+        // payment.tasks.push(taskSchema1);
+        // payment.tasks.push(taskSchema2);
+
+        console.log(payment);
+        payment.save();
+      }
+    }*/
+
+    /*  ;*/
+
+
+    /*
+    //pasar user a allowedusers
+    let taskcodes = await TaskCode.find({});
+
+    for (let code of taskcodes) {
+      code.allowedUsers = code.user;
+      await code.save();
+    }
+
+    console.log(taskcodes);*/
+
+    res.json({ message: "OK" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

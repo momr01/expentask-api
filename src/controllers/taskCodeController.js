@@ -5,9 +5,33 @@ const { TaskCode } = require("../model/TaskCode");
  * @param {*} req
  * @param {*} res
  */
-const getActiveTaskCodes = async (req, res) => {
+const getActiveOwnTaskCodes = async (req, res) => {
   try {
-    const codes = await TaskCode.find({ user: req.user, isActive: true }).sort({
+    const codes = await TaskCode.find({
+      user: req.user,
+      isActive: true,
+      //  allowedUsers: req.user,
+    }).sort({
+      number: 1,
+    });
+    res.status(200).json(codes);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/**
+ * Get all task codes
+ * @param {*} req
+ * @param {*} res
+ */
+const getActiveUsableTaskCodes = async (req, res) => {
+  try {
+    const codes = await TaskCode.find({
+      //user: req.user,
+      isActive: true,
+      allowedUsers: req.user,
+    }).sort({
       number: 1,
     });
     res.status(200).json(codes);
@@ -28,7 +52,8 @@ const createTaskCode = async (req, res) => {
     let number = 1;
     const currentCodes = await TaskCode.find({
       isActive: true,
-      user: req.user,
+      // user: req.user,
+      allowedUsers: req.user,
     });
     if (currentCodes.length > 0) {
       number = currentCodes[currentCodes.length - 1].number + 1;
@@ -36,7 +61,8 @@ const createTaskCode = async (req, res) => {
 
     const taskCodeExists = await TaskCode.findOne({
       name,
-      user: req.user,
+      // user: req.user,
+      allowedUsers: req.user,
       isActive: true,
     });
     if (taskCodeExists) {
@@ -50,6 +76,7 @@ const createTaskCode = async (req, res) => {
       number,
       abbr: abbr,
       user: req.user,
+      allowedUsers: req.user,
     });
 
     newTaskCode = await newTaskCode.save();
@@ -76,6 +103,7 @@ const editTaskCode = async (req, res) => {
     let taskCodeExists = await TaskCode.findOne({
       _id: id,
       user: req.user,
+      //  allowedUsers: req.user,
       isActive: true,
     });
     if (!taskCodeExists) {
@@ -92,7 +120,8 @@ const editTaskCode = async (req, res) => {
     //4. checking if the number exists
     const numberExists = await TaskCode.findOne({
       number,
-      user: req.user,
+      // user: req.user,
+      allowedUsers: req.user,
       isActive: true,
     });
 
@@ -105,6 +134,19 @@ const editTaskCode = async (req, res) => {
           message: "The number is already in use. Please choose another one.",
         });
       }
+    }
+
+    const taskWithSameData = await TaskCode.find({
+      name,
+      // user: req.user,
+      allowedUsers: { $in: [req.user] },
+      isActive: true,
+    });
+    console.log(taskWithSameData);
+    if (taskWithSameData) {
+      return res
+        .status(409)
+        .json({ msg: "TaskCode with same data already exists!" });
     }
 
     //5. updating the information
@@ -155,7 +197,8 @@ const disableTaskCode = async (req, res) => {
 };
 
 module.exports = {
-  getActiveTaskCodes,
+  getActiveOwnTaskCodes,
+  getActiveUsableTaskCodes,
   createTaskCode,
   editTaskCode,
   disableTaskCode,

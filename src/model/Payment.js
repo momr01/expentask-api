@@ -18,7 +18,7 @@ const paymentSchema = new Schema(
       default: 0.0,
       get: getAmount,
     },
-  
+
     tasks: [taskSchema],
     /* tasks: {
       type: Object,
@@ -58,6 +58,14 @@ const paymentSchema = new Schema(
         },
       },
     },*/
+    hasInstallments: {
+      type: Boolean,
+      default: false,
+    },
+    installmentsQuantity: {
+      type: Number,
+      default: 0,
+    },
     isActive: {
       type: Boolean,
       default: true,

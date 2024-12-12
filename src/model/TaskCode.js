@@ -24,6 +24,14 @@ const taskCodeSchema = new Schema(
       ref: "User",
       required: true,
     },
+    allowedUsers: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        // required: true,
+      },
+    ],
+
     isActive: {
       type: Boolean,
       default: true,

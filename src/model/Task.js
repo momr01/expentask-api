@@ -41,6 +41,10 @@ const taskSchema = new Schema(
       ref: "Payment",
       required: true,
     },
+    instalmentNumber: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     toObject: {
