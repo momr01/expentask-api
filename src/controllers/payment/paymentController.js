@@ -236,12 +236,24 @@ const addIndividualPayments = async (req, res) => {
 
         if (nameExists.defaultTasks.length > 0) {
           for (const task of nameExists.defaultTasks) {
-            const taskSchema = {
-              code: task,
-              deadline: defineDeadline,
-              paymentId: newPayment._id,
-            };
-            newPayment.tasks.push(taskSchema);
+            const taskIsActive = await TaskCode.findOne({ code: task });
+            // console.log(taskIsActive);
+
+            if (taskIsActive !== null) {
+              //console.log("entra aca");
+              const taskSchema = {
+                code: task,
+                deadline: defineDeadline,
+                paymentId: newPayment._id,
+              };
+              newPayment.tasks.push(taskSchema);
+            }
+            // else {
+            //   return res.status(400).json({
+            //     message:
+            //       "Please add at least one task code before creating a new payment.",
+            //   });
+            // }
           }
         } else {
           const firstCode = await TaskCode.findOne({
@@ -263,7 +275,19 @@ const addIndividualPayments = async (req, res) => {
             });
           }
         }
-        newPayment.save();
+        //newPayment = newPayment.save();
+        //  console.log(newPayment);
+
+        if (newPayment.tasks.length === 0) {
+         // console.log("NO CREAR");
+          return res.status(400).json({
+            message:
+              "Please add at least one task code before creating a new payment.",
+          });
+        } else {
+         // console.log("CREAR");
+          newPayment.save();
+        }
       }
     }
 
@@ -331,7 +355,11 @@ const addPaymentsWithInstallments = async (req, res) => {
         user: req.user,
         //isActive: true
       });
-      if (samePeriodExists && samePeriodExists.isActive && !samePeriodExists.isCompleted) {
+      if (
+        samePeriodExists &&
+        samePeriodExists.isActive &&
+        !samePeriodExists.isCompleted
+      ) {
         return res.status(409).json({
           message:
             "You have at least one payment with same name and period already registered.",
