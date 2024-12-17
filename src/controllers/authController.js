@@ -1,6 +1,7 @@
 const { User } = require("../model/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { TaskCode } = require("../model/TaskCode");
 
 //SIGN UP
 const signUp = async (req, res) => {
@@ -26,6 +27,14 @@ const signUp = async (req, res) => {
       password: hashPassword,
     });
     user = await user.save();
+
+    let defaultTaskCode = await TaskCode.findById("6626c59ddb4828b66d9ac7e6");
+    if (defaultTaskCode) {
+      defaultTaskCode.allowedUsers.push(user.id);
+    }
+
+    await defaultTaskCode.save();
+
     res.json(user);
   } catch (e) {
     res.status(500).json({ error: e.message });

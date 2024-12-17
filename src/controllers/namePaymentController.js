@@ -57,7 +57,8 @@ const addName = async (req, res) => {
     for (const task of defaultTasks) {
       const taskcodeExists = await TaskCode.findOne({
         _id: task,
-        user: req.user,
+        //user: req.user,
+        allowedUsers: req.user,
         isActive: true,
       });
       if (!taskcodeExists) {
