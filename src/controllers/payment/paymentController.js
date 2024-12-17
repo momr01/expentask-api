@@ -399,6 +399,10 @@ const addPaymentsWithInstallments = async (req, res) => {
 
         if (nameExists.defaultTasks.length > 0) {
           for (const task of nameExists.defaultTasks) {
+            const taskIsActive = await TaskCode.findOne({ code: task });
+            // console.log(taskIsActive);
+
+            if (taskIsActive !== null) {
             let initMonth = month;
 
             for (let index = 0; index < quantity; index++) {
@@ -420,7 +424,7 @@ const addPaymentsWithInstallments = async (req, res) => {
               //newMonth++;
               initMonth++;
             }
-          }
+          } }
         } else {
           const firstCode = await TaskCode.findOne({
             number: 1,
@@ -444,8 +448,18 @@ const addPaymentsWithInstallments = async (req, res) => {
             });
           }
         }
-        newPayment.save();
+       // newPayment.save();
         //console.log(newPayment);
+        if (newPayment.tasks.length === 0) {
+          // console.log("NO CREAR");
+           return res.status(400).json({
+             message:
+               "Please add at least one task code before creating a new payment.",
+           });
+         } else {
+          // console.log("CREAR");
+           newPayment.save();
+         }
       }
     }
 
