@@ -193,7 +193,12 @@ const addIndividualPayments = async (req, res) => {
         user: req.user,
         //isActive: true
       });
-      if (samePeriodExists && samePeriodExists.isActive) {
+      // if (samePeriodExists && samePeriodExists.isActive) {
+      if (
+        samePeriodExists &&
+        samePeriodExists.isActive &&
+        !samePeriodExists.isCompleted
+      ) {
         return res.status(409).json({
           message:
             "You have at least one payment with same name and period already registered.",
@@ -762,10 +767,10 @@ const editPayment = async (req, res) => {
 
     // 6. check if each code id from the body exists
     for (let id of codesArray) {
-      const codeExists = await TaskCode.findOne({ _id: id, 
-      //  user: req.user
-      allowedUsers: req.user,
-      
+      const codeExists = await TaskCode.findOne({
+        _id: id,
+        //  user: req.user
+        allowedUsers: req.user,
       });
       if (!codeExists) {
         return res.status(400).json({
