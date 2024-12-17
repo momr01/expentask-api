@@ -331,7 +331,7 @@ const addPaymentsWithInstallments = async (req, res) => {
         user: req.user,
         //isActive: true
       });
-      if (samePeriodExists && samePeriodExists.isActive) {
+      if (samePeriodExists && samePeriodExists.isActive && !samePeriodExists.isCompleted) {
         return res.status(409).json({
           message:
             "You have at least one payment with same name and period already registered.",
