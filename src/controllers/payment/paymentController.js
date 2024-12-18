@@ -236,17 +236,21 @@ const addIndividualPayments = async (req, res) => {
 
         if (nameExists.defaultTasks.length > 0) {
           for (const task of nameExists.defaultTasks) {
-            const taskIsActive = await TaskCode.findOne({ code: task });
+            // console.log(task._id);
+            // const taskIsActive = await TaskCode.findOne({ code: task._id });
+            const taskIsActive = await TaskCode.findById(task._id);
             // console.log(taskIsActive);
 
             if (taskIsActive !== null) {
               //console.log("entra aca");
-              const taskSchema = {
-                code: task,
-                deadline: defineDeadline,
-                paymentId: newPayment._id,
-              };
-              newPayment.tasks.push(taskSchema);
+              if (taskIsActive.isActive) {
+                const taskSchema = {
+                  code: task,
+                  deadline: defineDeadline,
+                  paymentId: newPayment._id,
+                };
+                newPayment.tasks.push(taskSchema);
+              }
             }
             // else {
             //   return res.status(400).json({
@@ -258,7 +262,8 @@ const addIndividualPayments = async (req, res) => {
         } else {
           const firstCode = await TaskCode.findOne({
             number: 1,
-            user: req.user,
+            //user: req.user,
+            allowedUsers: req.user,
           });
 
           if (firstCode) {
@@ -271,7 +276,7 @@ const addIndividualPayments = async (req, res) => {
           } else {
             return res.status(400).json({
               message:
-                "Please add at least one task code before creating a new payment.",
+                "1 Please add at least one task code before creating a new payment.",
             });
           }
         }
@@ -279,13 +284,13 @@ const addIndividualPayments = async (req, res) => {
         //  console.log(newPayment);
 
         if (newPayment.tasks.length === 0) {
-         // console.log("NO CREAR");
+          // console.log("NO CREAR");
           return res.status(400).json({
             message:
-              "Please add at least one task code before creating a new payment.",
+              "2 Please add at least one task code before creating a new payment.",
           });
         } else {
-         // console.log("CREAR");
+          // console.log("CREAR");
           newPayment.save();
         }
       }
@@ -399,36 +404,41 @@ const addPaymentsWithInstallments = async (req, res) => {
 
         if (nameExists.defaultTasks.length > 0) {
           for (const task of nameExists.defaultTasks) {
-            const taskIsActive = await TaskCode.findOne({ code: task });
+            // const taskIsActive = await TaskCode.findOne({ code: task });
             // console.log(taskIsActive);
+            const taskIsActive = await TaskCode.findById(task._id);
 
             if (taskIsActive !== null) {
-            let initMonth = month;
+              if (taskIsActive.isActive) {
+                let initMonth = month;
 
-            for (let index = 0; index < quantity; index++) {
-              let eachDeadline = new Date(year, initMonth, 0);
+                for (let index = 0; index < quantity; index++) {
+                  let eachDeadline = new Date(year, initMonth, 0);
 
-              //console.log(newMonth);
-              //console.log(aver);
+                  //console.log(newMonth);
+                  //console.log(aver);
 
-              const taskSchema = {
-                code: task,
-                // deadline: defineDeadline,
-                // deadline: instalmentDeadline(year, month + 1),
-                deadline: eachDeadline,
-                paymentId: newPayment._id,
-                instalmentNumber: index + 1,
-              };
-              newPayment.tasks.push(taskSchema);
+                  const taskSchema = {
+                    code: task,
+                    // deadline: defineDeadline,
+                    // deadline: instalmentDeadline(year, month + 1),
+                    deadline: eachDeadline,
+                    paymentId: newPayment._id,
+                    instalmentNumber: index + 1,
+                  };
+                  newPayment.tasks.push(taskSchema);
 
-              //newMonth++;
-              initMonth++;
+                  //newMonth++;
+                  initMonth++;
+                }
+              }
             }
-          } }
+          }
         } else {
           const firstCode = await TaskCode.findOne({
             number: 1,
-            user: req.user,
+           // user: req.user,
+           allowedUsers: req.user,
           });
 
           if (firstCode) {
@@ -444,22 +454,22 @@ const addPaymentsWithInstallments = async (req, res) => {
           } else {
             return res.status(400).json({
               message:
-                "Please add at least one task code before creating a new payment.",
+                "1 Please add at least one task code before creating a new payment.",
             });
           }
         }
-       // newPayment.save();
+        // newPayment.save();
         //console.log(newPayment);
         if (newPayment.tasks.length === 0) {
           // console.log("NO CREAR");
-           return res.status(400).json({
-             message:
-               "Please add at least one task code before creating a new payment.",
-           });
-         } else {
+          return res.status(400).json({
+            message:
+              "2 Please add at least one task code before creating a new payment.",
+          });
+        } else {
           // console.log("CREAR");
-           newPayment.save();
-         }
+          newPayment.save();
+        }
       }
     }
 
