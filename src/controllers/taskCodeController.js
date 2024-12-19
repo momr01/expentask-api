@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose");
 const { TaskCode } = require("../model/TaskCode");
 
 /**
@@ -143,10 +144,20 @@ const editTaskCode = async (req, res) => {
       isActive: true,
     });
     console.log(taskWithSameData);
-    if (taskWithSameData) {
-      return res
-        .status(409)
-        .json({ msg: "TaskCode with same data already exists!" });
+    if (taskWithSameData.length > 0) {
+      if (taskWithSameData.length > 1) {
+        return res
+          .status(409)
+          .json({ msg: "11TaskCode with same data already exists!" });
+      } else {
+        console.log(taskWithSameData[0]._id.toString());
+        console.log(new mongoose.Types.ObjectId(id));
+        if (taskWithSameData[0]._id.toString() !== id) {
+          return res
+            .status(409)
+            .json({ msg: "22TaskCode with same data already exists!" });
+        }
+      }
     }
 
     //5. updating the information
