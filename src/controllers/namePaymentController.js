@@ -154,7 +154,18 @@ const getAllNames = async (req, res) => {
           as: "category",
         },
       },
-    ]);
+      {
+        $sort: {
+          name: 1, // Orden ascendente por name
+          //period: 1, // Orden ascendente por period
+        },
+      },
+    ]
+  
+    , {collation: {
+      locale: "pt"
+   }}
+  );
     res.status(200).json(names);
   } catch (error) {
     res.status(500).json({ message: error.message });

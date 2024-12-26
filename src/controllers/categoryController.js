@@ -144,7 +144,17 @@ const getAllCategories = async (req, res) => {
           listNames: 1, // Solo los campos necesarios
         },
       },
-    ]);
+      {
+        $sort: {
+          name: 1, // Orden ascendente por name
+         //period: 1, // Orden ascendente por period
+        },
+      },
+    ]
+    , {collation: {
+      locale: "pt"
+   }}
+  );
 
     res.status(200).json(categories);
   } catch (error) {

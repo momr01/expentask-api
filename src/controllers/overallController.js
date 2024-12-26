@@ -480,7 +480,15 @@ const updateDB = async (req, res) => {
 
     const payments = await Payment.find({
       user: "6542b6a9cd1b77e631389710",
+      isActive: true,
+      isCompleted: false,
     });
+
+    for (const pa of payments) {
+      for (const nu of pa.tasks) {
+        console.log(nu.code._id.toString());
+      }
+    }
 
     //console.log(payments.length);
     let finalPayments = [];
@@ -492,7 +500,11 @@ const updateDB = async (req, res) => {
       }
     }
 
-    console.log(finalPayments.length);
+    // console.log(finalPayments.length);
+
+    for (const fi of finalPayments) {
+      // console.log(fi.name._id.toString());
+    }
 
     res.json({ message: "OK" });
   } catch (error) {

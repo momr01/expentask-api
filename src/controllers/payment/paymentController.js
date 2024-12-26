@@ -437,8 +437,8 @@ const addPaymentsWithInstallments = async (req, res) => {
         } else {
           const firstCode = await TaskCode.findOne({
             number: 1,
-           // user: req.user,
-           allowedUsers: req.user,
+            // user: req.user,
+            allowedUsers: req.user,
           });
 
           if (firstCode) {
@@ -641,132 +641,146 @@ const getAllPayments = async (req, res) => {
 const getUndonePayments = async (req, res) => {
   try {
     //1. getting the results
-    const payments = await Payment.aggregate([
-      {
-        $match: {
-          isCompleted: false,
-          isActive: true,
-          user: new mongoose.Types.ObjectId(req.user),
-        },
-      },
-      {
-        $addFields: {
-          amount: {
-            $toString: "$amount",
+    const payments = await Payment.aggregate(
+      [
+        {
+          $match: {
+            isCompleted: false,
+            isActive: true,
+            user: new mongoose.Types.ObjectId(req.user),
           },
         },
-      },
-      {
-        $unset: ["__v"],
-      },
-      {
-        $lookup: {
-          from: "names",
-          localField: "name",
-          foreignField: "_id",
-          as: "name",
-          pipeline: [
-            {
-              $unset: ["dataEntry", "__v"],
+        {
+          $addFields: {
+            amount: {
+              $toString: "$amount",
             },
-            {
-              $lookup: {
-                from: "categories",
-                localField: "category",
-                foreignField: "_id",
-                as: "category",
-                pipeline: [
-                  {
-                    $unset: ["dataEntry", "__v"],
-                  },
+          },
+        },
+        {
+          $unset: ["__v"],
+        },
+        {
+          $lookup: {
+            from: "names",
+            localField: "name",
+            foreignField: "_id",
+            as: "name",
+            pipeline: [
+              {
+                $unset: ["dataEntry", "__v"],
+              },
+              {
+                $lookup: {
+                  from: "categories",
+                  localField: "category",
+                  foreignField: "_id",
+                  as: "category",
+                  pipeline: [
+                    {
+                      $unset: ["dataEntry", "__v"],
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+        {
+          $unwind: "$tasks",
+        },
+        {
+          $addFields: {
+            "tasks.amountPaid": {
+              $toString: "$tasks.amountPaid", // Convierte amountPaid a string
+            },
+          },
+        },
+        {
+          $lookup: {
+            from: "taskcodes",
+            localField: "tasks.code",
+            foreignField: "_id",
+            as: "code",
+          },
+        },
+        {
+          $set: {
+            "tasks.code": "$code",
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "user",
+            foreignField: "_id",
+            as: "user",
+            pipeline: [
+              {
+                $unset: [
+                  "password",
+                  "isActive",
+                  "dataEntry",
+                  "payments",
+                  "__v",
                 ],
               },
+            ],
+          },
+        },
+        {
+          $group: {
+            _id: "$_id",
+            name: {
+              $first: "$name",
             },
-          ],
-        },
-      },
-      {
-        $unwind: "$tasks",
-      },
-      {
-        $addFields: {
-          "tasks.amountPaid": {
-            $toString: "$tasks.amountPaid", // Convierte amountPaid a string
-          },
-        },
-      },
-      {
-        $lookup: {
-          from: "taskcodes",
-          localField: "tasks.code",
-          foreignField: "_id",
-          as: "code",
-        },
-      },
-      {
-        $set: {
-          "tasks.code": "$code",
-        },
-      },
-      {
-        $lookup: {
-          from: "users",
-          localField: "user",
-          foreignField: "_id",
-          as: "user",
-          pipeline: [
-            {
-              $unset: ["password", "isActive", "dataEntry", "payments", "__v"],
+            deadline: {
+              $first: "$deadline",
             },
-          ],
+            tasks: { $push: "$tasks" },
+            amount: {
+              $first: "$amount",
+            },
+            isActive: {
+              $first: "$isActive",
+            },
+            isCompleted: {
+              $first: "$isCompleted",
+            },
+            user: {
+              $first: "$user",
+            },
+            period: {
+              $first: "$period",
+            },
+            // dateCompleted: {
+            //   $first: "$dateCompleted",
+            // },
+            dataEntry: {
+              $first: "$dataEntry",
+            },
+            hasInstallments: {
+              $first: "$hasInstallments",
+            },
+            installmentsQuantity: {
+              $first: "$installmentsQuantity",
+            },
+          },
         },
-      },
+        {
+          $sort: {
+            "name.0.name": 1, // Orden ascendente por name
+            period: 1, // Orden ascendente por period
+          },
+        },
+      ],
+
       {
-        $group: {
-          _id: "$_id",
-          name: {
-            $first: "$name",
-          },
-          deadline: {
-            $first: "$deadline",
-          },
-          tasks: { $push: "$tasks" },
-          amount: {
-            $first: "$amount",
-          },
-          isActive: {
-            $first: "$isActive",
-          },
-          isCompleted: {
-            $first: "$isCompleted",
-          },
-          user: {
-            $first: "$user",
-          },
-          period: {
-            $first: "$period",
-          },
-          // dateCompleted: {
-          //   $first: "$dateCompleted",
-          // },
-          dataEntry: {
-            $first: "$dataEntry",
-          },
-          hasInstallments: {
-            $first: "$hasInstallments",
-          },
-          installmentsQuantity: {
-            $first: "$installmentsQuantity",
-          },
+        collation: {
+          locale: "pt",
         },
-      },
-      {
-        $sort: {
-          "name.0.name": 1, // Orden ascendente por name
-          period: 1, // Orden ascendente por period
-        },
-      },
-    ]);
+      }
+    );
 
     res.json(payments);
   } catch (error) {

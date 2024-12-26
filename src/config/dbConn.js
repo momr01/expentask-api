@@ -9,6 +9,23 @@ const MONGODB_URI =
 const MONGODB_URI_TESTING =
   "mongodb+srv://momr01:Heartstopper01@cluster0.koly3.mongodb.net/TestingExpentask?retryWrites=true&w=majority";
 
+const responseConsole = (message) => {
+  let line = "";
+  for (let index = 0; index < 20; index++) {
+    line += "*";
+  }
+
+  console.log("");
+  console.log(line);
+  console.log(line);
+  console.log("");
+  console.log(message);
+  console.log("");
+  console.log(line);
+  console.log(line);
+  console.log("");
+};
+
 const connectDB = async () => {
   try {
     // await mongoose.connect(process.env.DATABASE_URI, {
@@ -16,6 +33,7 @@ const connectDB = async () => {
       useUnifiedTopology: true,
       useNewUrlParser: true,
     });
+    responseConsole("WARNING!!!!! PRODUCTION Database!");
   } catch (err) {
     console.error(err);
   }
@@ -27,6 +45,7 @@ const connectDBTesting = async () => {
       useUnifiedTopology: true,
       useNewUrlParser: true,
     });
+    responseConsole("ATENTION!!! Testing Database!");
   } catch (err) {
     console.error(err);
   }
