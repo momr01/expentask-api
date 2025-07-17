@@ -16,6 +16,9 @@
     "testname:watch": "npm run testname -- --watch",
     "testname:coverage": "npm run testname -- --coverage"
   },
+  "engines": {
+  "node": ">=22.0.0"
+},
   "author": "",
   "license": "ISC",
   "devDependencies": {
