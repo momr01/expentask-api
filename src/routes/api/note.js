@@ -7,4 +7,7 @@ router.route("/add").post(auth, notesController.addNote);
 
 router.route("/getAll").get(auth, notesController.getAllNotes);
 
+router.route("/edit/:id").put(auth, notesController.editNote);
+router.route("/disable/:id").put(auth, notesController.disableNote);
+
 module.exports = router;

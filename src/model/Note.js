@@ -5,16 +5,30 @@ const noteSchema = new Schema(
   {
     number: {
       type: Number,
+      default: 1,
+    },
+    title: {
+      type: String,
       required: true,
     },
-    nameAssociated: {
+    associatedType: {
+      type: String,
+      default: null,
+    },
+    associatedValue: {
+      type: String,
+      default: null
+    },
+    /*nameAssociated: {
       type: Schema.Types.ObjectId,
       ref: "Name",
+      default: null,
     },
     paymentAssociated: {
       type: Schema.Types.ObjectId,
       ref: "Payment",
-    },
+      default: null,
+    },*/
     content: {
       type: String,
       required: true,
