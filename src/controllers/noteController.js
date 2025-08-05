@@ -315,6 +315,426 @@ const getAllNotes = async (req, res) => {
 };
 
 /**
+ * Get the payment notes
+ * @param {*} req
+ * @param {*} res
+ */
+const getPaymentNotes = async (req, res) => {
+  try {
+    //1. getting data from request
+    const { id } = req.params;
+
+    //2. verify if payment exists
+    const paymentExists = await Payment.findById(id);
+    if (!paymentExists) {
+      return res.status(400).json({ message: "The payment does not exist." });
+    }
+
+    //1. getting data from db
+
+    const notes = await Note.aggregate([
+      {
+        $match: {
+          user: new mongoose.Types.ObjectId(req.user),
+          isActive: true,
+          associatedType: "PAGO",
+          associatedValue: id,
+        },
+      },
+      {
+        $unset: ["__v"],
+      },
+      /*{
+        $addFields: {
+          estado: {
+            $cond: {
+              if: { $eq: ["$isActive", true] },
+              then: "activo",
+              else: "inactivo",
+            },
+          },
+        },
+      }*/
+      /*  {
+        $lookup: {
+          from: "payments",
+          localField: "associatedValue",
+          foreignField: "_id",
+          as: "pagoData",
+        },
+      },
+      {
+        $unwind: {
+          path: "$pagoData",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      // Lookup a colección de nombres
+
+      {
+        $lookup: {
+          from: "names",
+          localField: "associatedValue",
+          foreignField: "_id",
+          as: "nombreData",
+        },
+      },
+      {
+        $unwind: {
+          path: "$nombreData",
+          preserveNullAndEmptyArrays: true,
+        },
+      },*/
+      // Agregar objeto "pago" o "nombre" condicionalmente
+      /* {
+        $addFields: {
+          pago: {
+            $cond: [
+              { $eq: ["$associatedType", "PAGO"] },
+              {
+                // id: "$pagoData._id",
+                // nombre: "$pagoData.nombre",
+                // periodo: "$pagoData.periodo",
+                id: "sdfsfs",
+                nombre: "sfsfsfs",
+                periodo: "sfsfsf",
+              },
+              "$$REMOVE", // no agregar si no es PAGO
+            ],
+          },
+          nombre: {
+            $cond: [
+              { $eq: ["$associatedType", "NOMBRE"] },
+              {
+                // id: "$nombreData._id",
+                // nombre: "$nombreData.name",
+                id: "sfsfsd",
+                nombre: "afafsaf",
+              },
+              "$$REMOVE", // no agregar si no es NOMBRE
+            ],
+          },
+        },
+      },
+      // Opcional: quitar los campos temporales
+      {
+        $project: {
+          pagoData: 0,
+          nombreData: 0,
+        },
+      },*/
+
+      /* {
+        $unwind: "$paymentNames",
+      },
+      {
+        $lookup: {
+          from: "names",
+          localField: "paymentNames",
+          foreignField: "_id",
+          as: "paymentName",
+          pipeline: [
+            {
+              $lookup: {
+                from: "categories",
+                localField: "category",
+                foreignField: "_id",
+                as: "category",
+              },
+            },
+            {
+              $unset: [
+                "__v",
+                //"defaultTasks", "dataEntry", "user", "category"
+              ],
+            },
+          ],
+        },
+      },
+
+      {
+        $set: {
+          paymentNames: { $first: "$paymentName" },
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "user",
+          pipeline: [
+            {
+              $unset: ["password", "isActive", "dataEntry", "payments", "__v"],
+            },
+          ],
+        },
+      },
+      {
+        $group: {
+          _id: "$_id",
+          name: {
+            $first: "$name",
+          },
+          isActive: {
+            $first: "$isActive",
+          },
+          user: {
+            $first: "$user",
+          },
+          paymentNames: { $push: "$paymentNames" },
+          dataEntry: {
+            $first: "$dataEntry",
+          },
+        },
+      },*/
+    ]);
+
+    const enrichedNotes = await Promise.all(
+      notes.map(async (note) => {
+        // if (note.associatedType === "PAGO" && note.associatedValue === id) {
+        const pago = await Payment.findById(note.associatedValue).lean();
+        if (pago) {
+          const nombre = await Name.findById(pago.name).lean();
+          if (nombre) {
+            note.payment = {
+              id: pago._id,
+              name: nombre.name,
+              period: pago.period,
+            };
+          }
+        }
+        //  }
+        /*else if (note.associatedType === "NOMBRE") {
+          const nombre = await Name.findById(note.associatedValue).lean();
+          if (nombre) {
+            note.name = {
+              id: nombre._id,
+              name: nombre.name,
+            };
+          }
+        }*/
+        return note;
+      })
+    );
+
+    res.status(200).json(enrichedNotes);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/**
+ * Get the payment notes
+ * @param {*} req
+ * @param {*} res
+ */
+const getNameNotes = async (req, res) => {
+  try {
+    //1. getting data from request
+    const { id } = req.params;
+
+    //2. verify if payment exists
+    const nameExists = await Name.findById(id);
+    if (!nameExists) {
+      return res.status(400).json({ message: "The name does not exist." });
+    }
+
+    //1. getting data from db
+
+    const notes = await Note.aggregate([
+      {
+        $match: {
+          user: new mongoose.Types.ObjectId(req.user),
+          isActive: true,
+          associatedType: "NOMBRE",
+          associatedValue: id,
+        },
+      },
+      {
+        $unset: ["__v"],
+      },
+      /*{
+        $addFields: {
+          estado: {
+            $cond: {
+              if: { $eq: ["$isActive", true] },
+              then: "activo",
+              else: "inactivo",
+            },
+          },
+        },
+      }*/
+      /*  {
+        $lookup: {
+          from: "payments",
+          localField: "associatedValue",
+          foreignField: "_id",
+          as: "pagoData",
+        },
+      },
+      {
+        $unwind: {
+          path: "$pagoData",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      // Lookup a colección de nombres
+
+      {
+        $lookup: {
+          from: "names",
+          localField: "associatedValue",
+          foreignField: "_id",
+          as: "nombreData",
+        },
+      },
+      {
+        $unwind: {
+          path: "$nombreData",
+          preserveNullAndEmptyArrays: true,
+        },
+      },*/
+      // Agregar objeto "pago" o "nombre" condicionalmente
+      /* {
+        $addFields: {
+          pago: {
+            $cond: [
+              { $eq: ["$associatedType", "PAGO"] },
+              {
+                // id: "$pagoData._id",
+                // nombre: "$pagoData.nombre",
+                // periodo: "$pagoData.periodo",
+                id: "sdfsfs",
+                nombre: "sfsfsfs",
+                periodo: "sfsfsf",
+              },
+              "$$REMOVE", // no agregar si no es PAGO
+            ],
+          },
+          nombre: {
+            $cond: [
+              { $eq: ["$associatedType", "NOMBRE"] },
+              {
+                // id: "$nombreData._id",
+                // nombre: "$nombreData.name",
+                id: "sfsfsd",
+                nombre: "afafsaf",
+              },
+              "$$REMOVE", // no agregar si no es NOMBRE
+            ],
+          },
+        },
+      },
+      // Opcional: quitar los campos temporales
+      {
+        $project: {
+          pagoData: 0,
+          nombreData: 0,
+        },
+      },*/
+
+      /* {
+        $unwind: "$paymentNames",
+      },
+      {
+        $lookup: {
+          from: "names",
+          localField: "paymentNames",
+          foreignField: "_id",
+          as: "paymentName",
+          pipeline: [
+            {
+              $lookup: {
+                from: "categories",
+                localField: "category",
+                foreignField: "_id",
+                as: "category",
+              },
+            },
+            {
+              $unset: [
+                "__v",
+                //"defaultTasks", "dataEntry", "user", "category"
+              ],
+            },
+          ],
+        },
+      },
+
+      {
+        $set: {
+          paymentNames: { $first: "$paymentName" },
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "user",
+          pipeline: [
+            {
+              $unset: ["password", "isActive", "dataEntry", "payments", "__v"],
+            },
+          ],
+        },
+      },
+      {
+        $group: {
+          _id: "$_id",
+          name: {
+            $first: "$name",
+          },
+          isActive: {
+            $first: "$isActive",
+          },
+          user: {
+            $first: "$user",
+          },
+          paymentNames: { $push: "$paymentNames" },
+          dataEntry: {
+            $first: "$dataEntry",
+          },
+        },
+      },*/
+    ]);
+
+    const enrichedNotes = await Promise.all(
+      notes.map(async (note) => {
+        // if (note.associatedType === "PAGO" && note.associatedValue === id) {
+        /*   const pago = await Payment.findById(note.associatedValue).lean();
+        if (pago) {
+          const nombre = await Name.findById(pago.name).lean();
+          if (nombre) {
+            note.payment = {
+              id: pago._id,
+              name: nombre.name,
+              period: pago.period,
+            };
+          }
+        }*/
+        //  }
+        //   else if (note.associatedType === "NOMBRE") {
+        const nombre = await Name.findById(note.associatedValue).lean();
+        if (nombre) {
+          note.name = {
+            id: nombre._id,
+            name: nombre.name,
+          };
+        }
+        //}
+        return note;
+      })
+    );
+
+    res.status(200).json(enrichedNotes);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/**
  * Edit a note
  * @param {*} req
  * @param {*} res
@@ -466,4 +886,6 @@ module.exports = {
   getAllNotes,
   editNote,
   disableNote,
+  getPaymentNotes,
+  getNameNotes,
 };
